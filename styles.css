@@ -1,0 +1,101 @@
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  color: #333;
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}
+
+
+#app {
+  width: 100%;
+  max-width: 500px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #444;
+}
+
+/* Input و Button */
+input[type="text"] {
+  width: 70%;
+  padding: 10px;
+  margin-right: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+button {
+  padding: 10px 14px;
+  background: #4CAF50;
+  border: none;
+  color: white;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background: #45a049;
+}
+
+
+ul {
+  list-style: none;
+  margin-top: 20px;
+}
+
+li {
+  background: #fafafa;
+  padding: 12px;
+  margin-bottom: 8px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+.delete-btn {
+  background: #e74c3c;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.delete-btn:hover {
+  background: #c0392b;
+}
+
+
+.nav-link {
+  display: inline-block;
+  margin: 10px 5px;
+  padding: 8px 12px;
+  background: #3498db;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+.nav-link:hover {
+  background: #2980b9;
+}
