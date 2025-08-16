@@ -1,4 +1,4 @@
-
+/* Reset */
 * {
   margin: 0;
   padding: 0;
@@ -14,7 +14,6 @@ body {
   padding: 40px;
 }
 
-
 #app {
   width: 100%;
   max-width: 500px;
@@ -24,7 +23,6 @@ body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-
 h1 {
   font-size: 24px;
   margin-bottom: 20px;
@@ -32,7 +30,6 @@ h1 {
   color: #444;
 }
 
-/* Input و Button */
 input[type="text"] {
   width: 70%;
   padding: 10px;
@@ -57,7 +54,6 @@ button:hover {
   background: #45a049;
 }
 
-
 ul {
   list-style: none;
   margin-top: 20px;
@@ -74,7 +70,6 @@ li {
   align-items: center;
 }
 
-
 .delete-btn {
   background: #e74c3c;
   padding: 6px 10px;
@@ -84,7 +79,6 @@ li {
 .delete-btn:hover {
   background: #c0392b;
 }
-
 
 .nav-link {
   display: inline-block;
