@@ -1,6 +1,6 @@
 
 /*
-  SprintJS - a tiny microframework for DOM abstraction, routing,
+  KOB.JS - a tiny microframework for DOM abstraction, routing,
   state management and event handling.
 */
 export function h(tag, attrs = {}, ...children) {

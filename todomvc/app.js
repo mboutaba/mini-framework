@@ -1,7 +1,7 @@
 
 import { h, mount, createStore, Router, Events } from "../../framework/index.js";
 
-const STORAGE_KEY = "sprintjs.todos";
+const STORAGE_KEY = "KOB.JS.todos";
 const load = () => {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
   catch { return []; }

@@ -26,7 +26,7 @@ mini-framework/
 └── README.md
 ```
 
-Open `examples/todomvc/index.html` in a browser (double-click works) or start a static server at the repo root.
+Open `todomvc/index.html` in a browser (double-click works) or start a static server at the repo root.
 
 ---
 
