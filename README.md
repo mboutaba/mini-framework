@@ -1,5 +1,5 @@
 
-# SprintJS (Mini Framework)
+# KOB.JS (Mini Framework)
 
 A lightweight (~3 KB gzipped) microframework that gives you:
 
@@ -8,7 +8,7 @@ A lightweight (~3 KB gzipped) microframework that gives you:
 - **State management** with a central store, `dispatch(action)` and `subscribe`.
 - **Event handling** through a high-level API (`attrs.on`) and a global `Events` bus—no direct `addEventListener` required.
 
-This repo includes a **TodoMVC** example built entirely with SprintJS.
+This repo includes a **TodoMVC** example built entirely with KOB.JS.
 
 ---
 
@@ -19,8 +19,7 @@ mini-framework/
 ├── framework/
 │   ├── core.js       # VDOM, Store, Router, Events
 │   └── index.js      # Barrel exports
-├── examples/
-│   └── todomvc/
+├── todomvc/
 │       ├── index.html
 │       ├── app.js
 │       └── styles.css
@@ -47,7 +46,7 @@ Open `examples/todomvc/index.html` in a browser (double-click works) or start a 
 ```js
 const view = () =>
   h("div", { class: "box", style: { padding: "8px" } },
-    h("h1", {}, "Hello SprintJS"),
+    h("h1", {}, "Hello KOB.JS"),
     h("button", { on: { click: () => alert("Clicked!") } }, "Click me")
   );
 ```
@@ -139,7 +138,7 @@ router.setRoute("/about"); // URL becomes #/about, state.route updates automatic
 
 ---
 
-## TodoMVC with SprintJS
+## TodoMVC with KOB.JS
 
 See `examples/todomvc/` for a complete implementation featuring:
 - Add, toggle, delete todos
