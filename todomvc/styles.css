@@ -1,0 +1,23 @@
+
+:root { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+body { background: #f5f5f5; margin: 0; padding: 0; }
+.todoapp { background: #fff; margin: 40px auto; width: 550px; box-shadow: 0 2px 4px rgba(0,0,0,.2); }
+.header { position: relative; padding: 16px 16px 0 16px; }
+.header h1 { position: absolute; top: -140px; width: 100%; font-size: 100px; text-align: center; color: rgba(175,47,47,0.15); font-weight: 100; }
+.new-todo { padding: 16px; width: 100%; border: none; outline: none; font-size: 22px; box-sizing: border-box; }
+.main { border-top: 1px solid #e6e6e6; position: relative; }
+.toggle-all { position: absolute; top: -54px; left: -12px; width: 60px; height: 34px; transform: rotate(90deg); }
+.todo-list { list-style: none; margin: 0; padding: 0; }
+.todo-list li { display: flex; align-items: center; border-bottom: 1px solid #ededed; }
+.todo-list li.editing .view { display:none; }
+.todo-list li.editing .edit { display:block; width: 100%; padding: 12px 16px; font-size: 18px; border: 1px solid #999; outline: none; }
+.todo-list li .toggle { margin: 0 12px; }
+.todo-list li label { flex: 1; padding: 16px; font-size: 18px; }
+.todo-list li .destroy { background: none; border: none; cursor: pointer; font-size: 24px; padding: 0 16px; }
+.todo-list li.completed label { color: #d9d9d9; text-decoration: line-through; }
+.footer { display:flex; align-items:center; justify-content: space-between; padding: 10px 16px; color: #777; }
+.footer .filters { list-style:none; display:flex; gap: 8px; padding:0; margin:0; }
+.footer .filters a { text-decoration:none; border: 1px solid transparent; padding: 3px 7px; border-radius: 3px; }
+.footer .filters a.selected { border-color: rgba(175,47,47,0.2); }
+.footer .clear-completed { background:none; border:none; color:#777; cursor:pointer; }
+.info { text-align:center; color:#bfbfbf; margin-top: 40px; }
