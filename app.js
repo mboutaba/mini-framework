@@ -9,8 +9,8 @@ function Home() {
     children: [
       { tag: "h1", children: ["Welcome Home"] },
       {
-        tag: "button",
-        attrs: { class: "nav-link" },
+        tag: "a",
+        attrs: { class: "nav-link", href: "#" },
         events: { click: () => app.navigate("/todo") },
         children: ["Go to Todo"]
       }
@@ -18,28 +18,33 @@ function Home() {
   };
 }
 
-// Component Todo
+// Component Todo Page
 function TodoPage(state) {
   return {
     tag: "div",
     children: [
       { tag: "h1", children: ["Todo List"] },
       {
-        tag: "input",
-        attrs: { type: "text", id: "newTodo", placeholder: "Add todo..." }
-      },
-      {
-        tag: "button",
-        children: ["Add"],
-        events: {
-          click: () => {
-            const input = document.getElementById("newTodo");
-            if (input.value) {
-              app.setState({ todos: [...(state.todos || []), input.value] });
-              input.value = "";
+        tag: "div",
+        children: [
+          {
+            tag: "input",
+            attrs: { type: "text", id: "newTodo", placeholder: "Add todo..." }
+          },
+          {
+            tag: "button",
+            children: ["Add"],
+            events: {
+              click: () => {
+                const input = document.getElementById("newTodo");
+                if (input.value) {
+                  app.setState({ todos: [...(state.todos || []), input.value] });
+                  input.value = "";
+                }
+              }
             }
           }
-        }
+        ]
       },
       {
         tag: "ul",
@@ -60,20 +65,26 @@ function TodoPage(state) {
             }
           ]
         }))
+      },
+      {
+        tag: "a",
+        attrs: { class: "nav-link", href: "#" },
+        events: { click: () => app.navigate("/") },
+        children: ["Back Home"]
       }
     ]
   };
 }
 
-// Routes
+// Define routes
 app.addRoute("/", Home);
 app.addRoute("/todo", TodoPage);
 
-// Re-render when state changes
+// State listener
 app.onStateChange = (state) => {
   app.render(app.routes[window.location.pathname](state));
 };
 
-// Init
+// Init app
 app.setState({ todos: [] });
 app.navigate("/");
