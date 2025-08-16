@@ -20,14 +20,14 @@ class MyFramework {
       el.setAttribute(key, value);
     }
 
-    // Add events (custom system)
+    // Add events
     if (vnode.events) {
       for (let [event, handler] of Object.entries(vnode.events)) {
         el[`on${event}`] = handler;
       }
     }
 
-    // Children
+    // Add children
     (vnode.children || []).forEach(child => {
       el.appendChild(this.createElement(child));
     });

@@ -2,16 +2,15 @@
 
 const app = new MyFramework("app");
 
-// Define components
+// Component Home
 function Home() {
   return {
     tag: "div",
-    attrs: { class: "home" },
     children: [
       { tag: "h1", children: ["Welcome Home"] },
       {
         tag: "button",
-        attrs: { class: "go-todo" },
+        attrs: { class: "nav-link" },
         events: { click: () => app.navigate("/todo") },
         children: ["Go to Todo"]
       }
@@ -19,10 +18,10 @@ function Home() {
   };
 }
 
+// Component Todo
 function TodoPage(state) {
   return {
     tag: "div",
-    attrs: { class: "todo" },
     children: [
       { tag: "h1", children: ["Todo List"] },
       {
@@ -46,22 +45,35 @@ function TodoPage(state) {
         tag: "ul",
         children: (state.todos || []).map(todo => ({
           tag: "li",
-          children: [todo]
+          children: [
+            todo,
+            {
+              tag: "button",
+              attrs: { class: "delete-btn" },
+              children: ["X"],
+              events: {
+                click: () => {
+                  const newTodos = state.todos.filter(t => t !== todo);
+                  app.setState({ todos: newTodos });
+                }
+              }
+            }
+          ]
         }))
       }
     ]
   };
 }
 
-// Add routes
+// Routes
 app.addRoute("/", Home);
 app.addRoute("/todo", TodoPage);
 
-// Listen to state changes
+// Re-render when state changes
 app.onStateChange = (state) => {
   app.render(app.routes[window.location.pathname](state));
 };
 
-// Init app
+// Init
 app.setState({ todos: [] });
 app.navigate("/");
