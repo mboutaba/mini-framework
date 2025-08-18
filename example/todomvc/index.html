@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TodoMVC - kob.js</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="animations.css">
+    <link rel="stylesheet" href="edit-animations.css">
+    <link rel="stylesheet" href="edit-tooltip.css">
+    <link rel="stylesheet" href="animations-extra.css">
+    <link rel="stylesheet" href="edit-indicator.css">
+    <link rel="stylesheet" href="input-enhancements.css">
+</head>
+<body>
+    <section class="todoapp">
+        <header class="header">
+            <h1>todos</h1>
+            <input class="new-todo" placeholder="What needs to be done? (Press Enter to add)" autofocus>
+        </header>
+        <section class="main">
+            <input id="toggle-all" class="toggle-all" type="checkbox">
+            <label for="toggle-all">Mark all as complete</label>
+            <ul class="todo-list"></ul>
+        </section>
+        <footer class="footer">
+            <span class="todo-count"><strong>0</strong> items left</span>
+            <ul class="filters">
+                <li>
+                    <a href="#/all" class="selected">All</a>
+                </li>
+                <li>
+                    <a href="#/active">Active</a>
+                </li>
+                <li>
+                    <a href="#/completed">Completed</a>
+                </li>
+            </ul>
+            <button class="clear-completed">Clear completed</button>
+        </footer>
+    </section>
+    <footer class="info">
+        <p>Double-click to edit a todo</p>
+        <p>Created by <a href="#">KOB.JS Team (abouachani, mboutaba, mkissi)</a></p>
+        <p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
+        <p><strong>Keyboard Shortcuts:</strong></p>
+        <p>Ctrl+Alt+R: Reset | Ctrl+Alt+E: Export | F1 or ?: Help</p>
+    </footer>
+
+    <!-- Load mini Framework Core -->
+    <script src="../../src/index.js"></script>
+
+    <!-- Load mini Framework DOM Modules -->
+    <script src="../../src/dom/element.js"></script>
+    <script src="../../src/dom/attributes.js"></script>
+    <script src="../../src/dom/manipulation.js"></script>
+    <script src="../../src/dom/render.js"></script>
+    <script src="../../src/dom/index.js"></script>
+
+    <!-- Load Other mini Framework Modules -->
+    <script src="../../src/events/events.js"></script>
+    <script src="../../src/state/simple-state.js"></script>
+    <script src="../../src/routing/router.js"></script>
+    
+    <!-- TodoMVC Application -->
+    <script src="structure-verification.js"></script>
+    <script src="notification.js"></script>
+    <script src="storage.js"></script>
+    <script src="export.js"></script>
+    <script src="reset.js"></script>
+    <script src="help.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

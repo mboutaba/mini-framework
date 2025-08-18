@@ -1,0 +1,42 @@
+/* Add a small tooltip to show editing is available */
+.todo-list li .view label:after {
+    content: " (double-click to edit)";
+    display: none;
+    font-size: 10px;
+    color: #999;
+    font-style: italic;
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+.todo-list li:hover .view label:after {
+    display: inline;
+}
+
+/* Hide the tooltip on small screens */
+@media (max-width: 430px) {
+    .todo-list li .view label:after {
+        display: none;
+    }
+}
+
+/* Add a small animation when entering edit mode */
+@keyframes editStart {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    50% { transform: scale(1.02); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.todo-list li.editing .edit {
+    animation: editStart 0.2s ease-out;
+}
+
+/* Add a small animation when exiting edit mode */
+@keyframes editEnd {
+    0% { background-color: rgba(255, 255, 150, 0.5); }
+    100% { background-color: transparent; }
+}
+
+.todo-list li.edited {
+    animation: editEnd 1s ease-out;
+}

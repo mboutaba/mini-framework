@@ -1,0 +1,25 @@
+/* Make labels look clickable */
+.todo-list li .view label {
+    cursor: text;
+    position: relative;
+}
+
+/* Add visual indicator for double-click */
+.todo-list li .view label:hover::after {
+    content: "✎";
+    position: absolute;
+    right: -20px;
+    opacity: 0.5;
+}
+
+/* Ensure label takes full width for better click target */
+.todo-list li .view label {
+    display: block;
+    width: calc(100% - 78px);
+}
+
+/* Improve focus styles for keyboard navigation */
+.todo-list li .view label:focus {
+    outline: 1px dashed #4d4d4d;
+    outline-offset: 2px;
+}

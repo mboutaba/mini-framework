@@ -1,0 +1,72 @@
+/* Editing animations */
+@keyframes focusEdit {
+    0% { box-shadow: 0 0 0 1px rgba(175, 47, 47, 0.2); }
+    50% { box-shadow: 0 0 0 3px rgba(175, 47, 47, 0.4); }
+    100% { box-shadow: 0 0 0 1px rgba(175, 47, 47, 0.2); }
+}
+
+.todo-list li.editing .edit {
+    animation: focusEdit 1s ease-in-out;
+    box-shadow: 0 0 0 1px rgba(175, 47, 47, 0.2);
+}
+
+/* Improve editing styles */
+.todo-list li.editing {
+    border-bottom: 1px solid #e6e6e6;
+    padding: 0;
+    position: relative;
+    z-index: 10;
+}
+
+.todo-list li.editing:before {
+    content: "✏️";
+    position: absolute;
+    left: 10px;
+    top: 14px;
+    font-size: 12px;
+    z-index: 11;
+    opacity: 0.6;
+}
+
+/* Edit icon */
+.todo-list li .edit-icon {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 45px;
+    bottom: 0;
+    width: 30px;
+    height: 40px;
+    margin: auto 0;
+    font-size: 16px;
+    color: #cc9a9a;
+    transition: color 0.2s ease-out;
+    cursor: pointer;
+}
+
+.todo-list li:hover .edit-icon {
+    display: block;
+}
+
+.todo-list li .edit-icon:hover {
+    color: #af5b5e;
+}
+
+/* Accessibility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Keyboard focus styles */
+.todo-list li label:focus {
+    outline: 1px dotted #999;
+    outline-offset: -1px;
+}

@@ -1,151 +1,140 @@
+# mini Framework (kob.js)
 
-# KOB.JS (Mini Framework)
+A lightweight, modular JavaScript framework for building web applications with state management, event handling, DOM manipulation, and routing.
 
-A lightweight (~3 KB gzipped) microframework that gives you:
+## Features
 
-- **DOM abstraction** via a tiny Virtual DOM (`h`) and a diffing renderer.
-- **Routing** syncing the URL hash (`#/path`) with application state.
-- **State management** with a central store, `dispatch(action)` and `subscribe`.
-- **Event handling** through a high-level API (`attrs.on`) and a global `Events` bus—no direct `addEventListener` required.
+- **🔄 State Management** - Configurable state container with persistence
+- **🎯 Event System** - Event delegation and custom event handling
+- **🏗️ DOM Utilities** - Element creation, manipulation, and rendering
+- **🛣️ Routing** - Simple client-side routing
+- **💾 Persistence** - Configurable localStorage integration
+- **🔧 Modular** - Use only the modules you need
 
-This repo includes a **TodoMVC** example built entirely with KOB.JS.
+## Quick Start
 
----
-
-## Folder Structure
-
-```
-mini-framework/
-├── framework/
-│   ├── core.js       # VDOM, Store, Router, Events
-│   └── index.js      # Barrel exports
-├── todomvc/
-│       ├── index.html
-│       ├── app.js
-│       └── styles.css
-└── README.md
-```
-
-Open `todomvc/index.html` in a browser (double-click works) or start a static server at the repo root.
-
----
-
-## Getting Started
-
-### Include the framework
+### 1. Include the Framework
 
 ```html
-<script type="module">
-  import { h, mount, createStore, Router, Events } from "../../framework/index.js";
-  // your code...
-</script>
+<!-- Core Framework -->
+<script src="src/index.js"></script>
+
+<!-- DOM Module -->
+<script src="src/dom/element.js"></script>
+<script src="src/dom/attributes.js"></script>
+<script src="src/dom/manipulation.js"></script>
+<script src="src/dom/render.js"></script>
+<script src="src/dom/index.js"></script>
+
+<!-- Events Module -->
+<script src="src/events/events.js"></script>
+
+<!-- State Module -->
+<script src="src/state/simple-state.js"></script>
+
+<!-- Routing Module -->
+<script src="src/routing/router.js"></script>
 ```
 
-### Create elements
+### 2. Initialize State Management
 
-```js
-const view = () =>
-  h("div", { class: "box", style: { padding: "8px" } },
-    h("h1", {}, "Hello KOB.JS"),
-    h("button", { on: { click: () => alert("Clicked!") } }, "Click me")
-  );
+```javascript
+// Configure state for your application
+const stateConfig = {
+    initialState: {
+        count: 0,
+        items: []
+    },
+    storageKey: 'my-app-state',
+    enablePersistence: true,
+    enableLogging: false
+};
+
+// Initialize state manager
+window.mini.state.init(stateConfig);
+const state = window.mini.state;
+
+// Subscribe to state changes
+state.subscribe(function(newState, prevState, actionType) {
+    console.log('State changed:', actionType, newState);
+    render(); // Update your UI
+});
 ```
 
-### Nest elements
+### 3. Update State
 
-Just compose `h()` calls. Children can be arrays, strings, numbers or other VNodes.
+```javascript
+// Function-based updates (recommended)
+state.setState(function(currentState) {
+    return {
+        ...currentState,
+        count: currentState.count + 1
+    };
+}, 'INCREMENT');
 
-```js
-h("ul", {},
-  items.map(x => h("li", {}, x.title))
-);
+// Object-based updates (for simple changes)
+state.setState({ count: 5 }, 'SET_COUNT');
 ```
 
-### Add attributes
+## State Management API
 
-Attributes go in the second argument (an object). Styles can be objects. `class`/`className` are supported; `data-*` attributes work too.
+### Configuration Options
 
-```js
-h("input", { type: "text", placeholder: "Your name", "data-test": "name" });
+- `initialState` - Initial state object
+- `storageKey` - Key for localStorage persistence
+- `enablePersistence` - Enable/disable localStorage
+- `enableLogging` - Enable/disable console logging
+
+### Methods
+
+- `init(config)` - Initialize with configuration
+- `getState()` - Get current state
+- `setState(updates, actionType)` - Update state
+- `subscribe(callback)` - Subscribe to changes
+- `reset()` - Reset to initial state
+- `getStats()` - Get framework statistics
+
+## Examples
+
+### Counter App
+```bash
+# Open examples/counter/index.html
 ```
 
-### Events (no `addEventListener`)
-
-Use the `on` attribute to attach events. Handlers receive the native event.
-
-```js
-h("button", { on: { click: (ev) => console.log("ok", ev) } }, "OK");
+### TodoMVC App
+```bash
+# Open examples/todomvc/index.html
 ```
 
-You also have a simple pub/sub bus:
+## Architecture
 
-```js
-import { Events } from "../../framework/index.js";
-const unsub = Events.on("saved", (payload) => console.log("Saved", payload));
-Events.emit("saved", { id: 1 });
-unsub();
-```
+The framework is designed to be:
 
-### State Management
+- **Generic** - No hardcoded application logic
+- **Configurable** - Customize behavior through configuration
+- **Modular** - Use only what you need
+- **Lightweight** - Minimal overhead
+- **Standards-compliant** - Works with modern browsers
 
-Create a store with an initial state and a reducers map.
+## Migration from v1.0
 
-```js
-const store = createStore(
-  { count: 0 },
-  {
-    increment: (s) => ({ ...s, count: s.count + 1 }),
-    setCount: (s, a) => ({ ...s, count: a.value })
-  }
-);
+If you're upgrading from the previous version:
 
-store.subscribe((next) => console.log("state:", next));
-store.dispatch({ type: "increment" });
-store.dispatch({ type: "setCount", value: 10 });
-```
+1. **State initialization** now requires configuration
+2. **Storage keys** are configurable
+3. **TodoMVC-specific code** has been removed from core modules
+4. **Event delegation** is now generic
 
-### Rendering / Mounting
-
-`mount(view, container, store)` calls your `view(state)` and keeps it up to date when you re-render (e.g., after state changes).
-
-```js
-const view = (state) => h("div", {}, `Count: ${state.count}`);
-const { rerender } = mount(view, document.getElementById("app"), store);
-store.subscribe(rerender); // trigger VDOM patch on state changes
-```
-
-### Router
-
-Hash-based router that syncs `state.route` with the address bar.
-
-```js
-const store = createStore({ route: "/" });
-const router = Router({ store, stateKey: "route" });
-Events.on("@route", ({ path }) => console.log("navigated to", path));
-
-// Navigate programmatically:
-router.setRoute("/about"); // URL becomes #/about, state.route updates automatically
-```
+See the examples for updated usage patterns.
 
 ---
 
-## Why it works this way
-
-- **Virtual DOM** keeps rendering deterministic: your `view(state)` returns a plain object tree; the framework diffs and patches the real DOM for you.
-- **Single source of truth** via the store reduces ad-hoc DOM reads/writes.
-- **Hash router** requires no server config, and is enough for small SPAs.
-- **High-level events** (`attrs.on` and `Events`) make your code declarative and testable, avoiding direct `addEventListener` in app code.
-
----
-
-## TodoMVC with KOB.JS
-
-See `examples/todomvc/` for a complete implementation featuring:
-- Add, toggle, delete todos
-- Filter routes: `#/`, `#/active`, `#/completed`
-- Edit in place (double click), clear completed
-- Persist to `localStorage`
-
-Open `examples/todomvc/index.html` to try it.
+**Built by PoSSH Team**
 ```
-
+P - People (Phillip)
+O - of (Ouma)
+S - Strength (Stephen)
+S - Strategy (Shisia)
+    &
+H - Honor (Hezron)
+```

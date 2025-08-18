@@ -1,0 +1,37 @@
+{
+  "name": "kob.js",
+  "version": "1.0.0",
+  "description": "A lightweight custom JavaScript framework with DOM abstraction, state management, event handling, and routing",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "dev": "python3 -m http.server 8080",
+    "test": "echo \"Tests will be implemented later\" && exit 0",
+    "build": "echo \"Build process will be implemented if needed\" && exit 0"
+  },
+  "keywords": [
+    "javascript",
+    "framework",
+    "dom",
+    "state-management",
+    "routing",
+    "todomvc",
+    "vanilla-js"
+  ],
+  "author": "mini Framework Team (abouachani mkissi mboutaba",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ouachanii/mini-framework.git"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "devDependencies": {},
+  "dependencies": {},
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}

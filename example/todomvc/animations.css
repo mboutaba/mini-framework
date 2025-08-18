@@ -1,0 +1,46 @@
+/* Animation for new todos */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.todo-list li {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Highlight effect for new todos */
+.todo-list li.highlight {
+    background-color: rgba(255, 255, 150, 0.5);
+    transition: background-color 1s ease;
+}
+
+/* Focus effect for new todo input */
+.new-todo:focus {
+    box-shadow: 0 0 2px 2px rgba(175, 47, 47, 0.2);
+    transition: box-shadow 0.3s ease;
+}
+
+/* Pulse animation for empty todo list */
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(175, 47, 47, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(175, 47, 47, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(175, 47, 47, 0); }
+}
+
+.todoapp:empty .new-todo {
+    animation: pulse 2s infinite;
+}
+
+/* Empty state message */
+.empty-state {
+    text-align: center;
+    padding: 20px;
+    color: #777;
+    font-style: italic;
+    border-bottom: none !important;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.empty-state p {
+    margin: 10px 0;
+}
