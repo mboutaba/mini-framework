@@ -94,12 +94,7 @@ state.setState({ count: 5 }, 'SET_COUNT');
 - `reset()` - Reset to initial state
 - `getStats()` - Get framework statistics
 
-## Examples
-
-### Counter App
-```bash
-# Open examples/counter/index.html
-```
+## Example
 
 ### TodoMVC App
 ```bash
@@ -129,12 +124,9 @@ See the examples for updated usage patterns.
 
 ---
 
-**Built by PoSSH Team**
+**Built by: KOB team**
 ```
-P - People (Phillip)
-O - of (Ouma)
-S - Strength (Stephen)
-S - Strategy (Shisia)
-    &
-H - Honor (Hezron)
+K: Kissi Mohamed
+O: Ouachani Abderrahim
+B: Boutaba Mohammed
 ```
