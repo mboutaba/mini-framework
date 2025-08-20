@@ -1,8 +1,8 @@
 // app/todomvc.js
-import { h, render, update } from '../src/minifw/vdom.js';
-import { createStore } from '../src/minifw/store.js';
-import { createRouter } from '../src/minifw/router.js';
-import { createEvents } from '../src/minifw/events.js';
+import { h, render, update } from '../../src/minifw/vdom.js';
+import { createStore } from '../../src/minifw/store.js';
+import { createRouter } from '../../src/minifw/router.js';
+import { createEvents } from '../../src/minifw/events.js';
 
 // App setup using the framework primitives
 const container = document.querySelector('#app');
@@ -66,7 +66,7 @@ function view({ state, route }) {
   const right = state.todos.filter(t=>t.done).length;
 
   return h('div', { className: 'container' },
-    h('h1', null, 'MiniFW • TodoMVC'),
+    h('h1', null, 'TodoMVC'),
     h('p', { className: 'muted' }, 'A tiny framework demo with Router, Store, Events and a virtual DOM'),
     h('div', { className: 'row' },
       h('input', { type:'text', placeholder:'What needs to be done?', value: state.draft, 'data-action-input':'setDraft($value)' }),
