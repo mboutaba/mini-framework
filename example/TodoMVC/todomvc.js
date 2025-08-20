@@ -50,7 +50,7 @@ const actions = {
     store.update({ todos });
   },
   finishEdit(id, value) {
-    console.log("here---");
+    console.log("here---",id,value);
     const todos = store.get().todos.map(t => {
       if (t.id !== id) return t;
       return { ...t, text: value.trim() || t.text, editing: false };
@@ -155,6 +155,7 @@ function view({ state, route }) {
                 'data-action': 'toggle("' + t.id + '")'
               }),
               t.editing ? h('input', {
+                'data-action-keydown':'finishEdit("' + t.id + '", $value)',
                 className: 'new-todo edit',
                 id: 'todo-input',
                 type: 'text',

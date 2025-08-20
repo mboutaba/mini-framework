@@ -45,10 +45,12 @@ export function createEvents(root = document) {
       dispatch(name, ...args);
     });
     on('keydown', '[data-action-keydown]', (ev, el) => {
-    const expr = el.getAttribute('data-action-keydown');
-    const { name, args } = parseAction(expr, el, ev);
-    dispatch(name, ...args);
-  });
+      if (ev.key === 'Enter') {   // <-- only trigger on Enter
+        const expr = el.getAttribute('data-action-keydown');
+        const { name, args } = parseAction(expr, el, ev);
+        dispatch(name, ...args);
+      }
+    });
   }
 
   return { on, bindActions };
@@ -67,7 +69,7 @@ function parseAction(expr, el, ev) {
       if (t === '$event') args.push(ev);
       else if (t === '$el') args.push(el);
       else if (t === '$value') args.push(el.value ?? el.getAttribute('data-value'));
-      else if (/^[\"'`].*[\"'`]$/.test(t)) args.push(t.slice(1,-1));
+      else if (/^[\"'`].*[\"'`]$/.test(t)) args.push(t.slice(1, -1));
       else if (/^\d+(?:\.\d+)?$/.test(t)) args.push(parseFloat(t));
       else if (t === 'true' || t === 'false') args.push(t === 'true');
       else args.push(t);
@@ -78,13 +80,13 @@ function parseAction(expr, el, ev) {
 
 function splitArgs(s) {
   const out = []; let buf = ''; let q = null; let depth = 0;
-  for (let i=0; i<s.length; i++) {
+  for (let i = 0; i < s.length; i++) {
     const c = s[i];
-    if (q) { buf += c; if (c===q && s[i-1] !== '\\') q=null; continue; }
+    if (q) { buf += c; if (c === q && s[i - 1] !== '\\') q = null; continue; }
     if (c === '"' || c === "'" || c === '`') { q = c; buf += c; continue; }
     if (c === '(') { depth++; buf += c; continue; }
     if (c === ')') { depth--; buf += c; continue; }
-    if (c === ',' && depth===0) { out.push(buf); buf=''; continue; }
+    if (c === ',' && depth === 0) { out.push(buf); buf = ''; continue; }
     buf += c;
   }
   if (buf.trim()) out.push(buf);
