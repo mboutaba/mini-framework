@@ -57,56 +57,70 @@ export function update(container, nextVNode) {
 // A very small keyed-by-index diff. Good enough for learning/demo.
 function diff(el, oldVNode, newVNode) {
   if (!oldVNode) {
+    // No old vnode -> just create
     el.appendChild(createEl(newVNode));
     return;
   }
+
   if (!newVNode) {
-    el.remove();
+    // No new vnode -> remove element
+    if (el.parentNode) el.parentNode.removeChild(el);
     return;
   }
+
   // Text node
   if (oldVNode.tag === '#text' || newVNode.tag === '#text') {
     if (oldVNode.tag !== newVNode.tag || oldVNode.text !== newVNode.text) {
       const newEl = createEl(newVNode);
       el.replaceWith(newEl);
+      newVNode._el = newEl;
+    } else {
+      newVNode._el = el;
     }
     return;
   }
+
   // Different tags -> replace
   if (oldVNode.tag !== newVNode.tag) {
     const newEl = createEl(newVNode);
     el.replaceWith(newEl);
+    newVNode._el = newEl;
     return;
   }
+
   // Update attributes
   const oldP = oldVNode.props || {};
   const newP = newVNode.props || {};
-  for (const k of new Set([...Object.keys(oldP), ...Object.keys(newP)])) {
-    if (oldP[k] !== newP[k]) setProp(el, k, newP[k]);
+  for (const key of new Set([...Object.keys(oldP), ...Object.keys(newP)])) {
+    if (oldP[key] !== newP[key]) setProp(el, key, newP[key]);
   }
-  // Children (naive)
+
+  // Update children
   const oldC = oldVNode.children || [];
   const newC = newVNode.children || [];
-  const max = Math.max(oldC.length, newC.length);
-  for (let i = 0; i < max; i++) {
+  const min = Math.min(oldC.length, newC.length);
+
+  // Update existing children
+  for (let i = 0; i < min; i++) {
     const childEl = el.childNodes[i];
-    const o = oldC[i];
-    const n = newC[i];
-    if (!o && n) {
-      el.appendChild(createEl(n));
-      continue;
-    }
-    if (o && !n) {
-      el.removeChild(childEl);
-      continue;
-    }
-    if (!same(o, n)) {
-      const newEl = createEl(n);
-      el.replaceChild(newEl, childEl);
-      continue;
-    }
-    // same -> recurse
-    diff(childEl, o, n);
+    diff(childEl, oldC[i], newC[i]);
   }
+
+  // Append new children
+  for (let i = min; i < newC.length; i++) {
+    el.appendChild(createEl(newC[i]));
+  }
+
+  // Remove extra old children
+  for (let i = oldC.length - 1; i >= min; i--) {
+    const childEl = el.childNodes[i];
+    if (childEl) el.removeChild(childEl);
+  }
+
   newVNode._el = el;
 }
+
+// Helper: check if two nodes are “same” (can be shallow)
+// function same(a, b) {
+//   return a && b && a.tag === b.tag && a.key === b.key;
+// }

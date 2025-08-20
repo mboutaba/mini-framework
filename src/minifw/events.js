@@ -44,6 +44,11 @@ export function createEvents(root = document) {
       const { name, args } = parseAction(expr, el, ev);
       dispatch(name, ...args);
     });
+    on('keydown', '[data-action-keydown]', (ev, el) => {
+    const expr = el.getAttribute('data-action-keydown');
+    const { name, args } = parseAction(expr, el, ev);
+    dispatch(name, ...args);
+  });
   }
 
   return { on, bindActions };

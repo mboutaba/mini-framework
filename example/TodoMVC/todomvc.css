@@ -529,4 +529,17 @@ hr {
     }
 }
 
-/*# sourceMappingURL=app.css.map*/
+.todo-list li .edit {
+  display: block; /* hidden by default */
+  width: 100%;
+  padding: 6px;
+  font-size: 16px;
+}
+
+.todo-list li.editing .edit {
+  display: block; /* show when editing */
+}
+
+.todo-list li.editing .view {
+  display: none; /* hide label/checkbox when editing */
+}
