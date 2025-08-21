@@ -1,12 +1,12 @@
 // app/todomvc.js
 import { h, render, update } from '../../src/minifw/vdom.js';
-import { createStore } from '../../src/minifw/store.js';
+import { createState } from '../../src/minifw/state.js';
 import { createRouter } from '../../src/minifw/router.js';
 import { createEvents } from '../../src/minifw/events.js';
 
 // App setup using the framework primitives
 const container = document.querySelector('#app');
-const store = createStore({ todos: [], draft: '' });
+const state = createState({ todos: [], draft: '' });
 const router = createRouter([
   { path: '/', view: 'home' },
   { path: '/:filter', view: 'home' },
@@ -16,24 +16,24 @@ const events = createEvents(document);
 
 // Actions (called via data-action / data-action-input)
 const actions = {
-  setDraft(v) { store.update({ draft: v.trimStart() }); },
+  setDraft(v) { state.update({ draft: v.trimStart() }); },
   addTodo() {
-    const text = store.get().draft.trim();
+    const text = state.get().draft.trim();
     if (!text) return;
     const t = { id: Date.now().toString(36), text, done: false };
-    store.update({ todos: [t, ...store.get().todos], draft: '' });
+    state.update({ todos: [t, ...state.get().todos], draft: '' });
   },
   toggle(id) {
-    const todos = store.get().todos.map(t => t.id === id ? { ...t, done: !t.done } : t);
-    store.update({ todos });
+    const todos = state.get().todos.map(t => t.id === id ? { ...t, done: !t.done } : t);
+    state.update({ todos });
   },
   remove(id) {
-    const todos = store.get().todos.filter(t => t.id !== id);
-    store.update({ todos });
+    const todos = state.get().todos.filter(t => t.id !== id);
+    state.update({ todos });
   },
   clearDone() {
-    const todos = store.get().todos.filter(t => !t.done);
-    store.update({ todos });
+    const todos = state.get().todos.filter(t => !t.done);
+    state.update({ todos });
   },
   rename(id) {
     // const text = prompt('Rename item:');
@@ -41,31 +41,31 @@ const actions = {
     actions.startEdit(id);
 
     // if (text === null) return;
-    // const todos = store.get().todos.map(t => t.id === id ? { ...t, text: text.trim() || t.text } : t);
-    // store.update({ todos });
+    // const todos = state.get().todos.map(t => t.id === id ? { ...t, text: text.trim() || t.text } : t);
+    // state.update({ todos });
   },
   startEdit(id) {
     console.log("her");
-    const todos = store.get().todos.map(t => t.id === id ? { ...t, editing: true } : t);
-    store.update({ todos });
+    const todos = state.get().todos.map(t => t.id === id ? { ...t, editing: true } : t);
+    state.update({ todos });
   },
   finishEdit(id, value) {
     console.log("here---",id,value);
-    const todos = store.get().todos.map(t => {
+    const todos = state.get().todos.map(t => {
       if (t.id !== id) return t;
       return { ...t, text: value.trim() || t.text, editing: false };
     });
-    store.update({ todos });
+    state.update({ todos });
   },
   toggleAll() {
-    const todos = store.get().todos;
+    const todos = state.get().todos;
     const allDone = todos.every(t => t.done);
     const updated = todos.map(t => ({ ...t, done: !allDone }));
-    store.update({ todos: updated });
+    state.update({ todos: updated });
   },
   clearCompleted() {
-    const todos = store.get().todos.filter(t => !t.done);
-    store.update({ todos });
+    const todos = state.get().todos.filter(t => !t.done);
+    state.update({ todos });
   },
 
   go(path) { location.hash = path; }
@@ -81,8 +81,8 @@ events.bindActions((name, ...args) => {
 (function persistTodos() {
   try {
     const saved = JSON.parse(localStorage.getItem('minifw.todos') || 'null');
-    if (saved && saved.todos) store.update({ ...store.get(), todos: saved.todos });
-    store.subscribe((s) => localStorage.setItem('minifw.todos', JSON.stringify({ todos: s.todos })));
+    if (saved && saved.todos) state.update({ ...state.get(), todos: saved.todos });
+    state.subscribe((s) => localStorage.setItem('minifw.todos', JSON.stringify({ todos: s.todos })));
   } catch (e) { console.warn('persist failed', e); }
 })();
 
@@ -165,10 +165,10 @@ function view({ state, route }) {
                 id: 'edit-' + t.id,
                 style: { display: t.displayEdit },
                 // oninput: (e) => {
-                //   const todos = store.get().todos.map(td =>
+                //   const todos = state.get().todos.map(td =>
                 //     td.id === t.id ? { ...td, draftText: e.target.value } : td
                 //   );
-                //   store.update({ todos });
+                //   state.update({ todos });
                 // },
                 // onblur: (e) => actions.finishEdit(t.id, e.target.value),
                 // onkeydown: (e) => {
@@ -220,12 +220,12 @@ function filterLink(name, active) {
 
 // Render cycle
 function tick() {
-  const vnode = view({ state: store.get(), route: router.current });
+  const vnode = view({ state: state.get(), route: router.current });
   if (!container._vnode) render(vnode, container);
   else update(container, vnode);
 }
 router.onChange = tick;
-store.subscribe(tick);
+state.subscribe(tick);
 setTimeout(tick, 0);
 
 // Keyboard: Enter to add

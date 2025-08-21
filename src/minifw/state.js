@@ -1,6 +1,6 @@
-// src/minifw/store.js
-// Simple immutable store with subscribe and set/update helpers
-export function createStore(initial) {
+// src/minifw/state.js
+// Simple immutable state with subscribe and set/update helpers
+export function createState(initial) {
   let state = deepFreeze(initial);
   const subs = new Set();
 

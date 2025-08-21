@@ -1,4 +1,4 @@
-# MiniFW — A mini Web Framework (Router • Store • Events • Virtual DOM)
+# MiniFW — A mini Web Framework (Router • state • Events • Virtual DOM)
 
 **Goal:** Provide a small, teachable framework that abstracts the DOM, routing, state, and events — and a TodoMVC built on top. No external libraries.
 
@@ -14,7 +14,7 @@ minifw/
 ├─ src/
 │  └─ minifw/
 │     ├─ vdom.js            # Virtual DOM: h(), render(), update()
-│     ├─ store.js           # State management
+│     ├─ state.js           # State management
 │     ├─ router.js          # Hash router with :params
 │     ├─ events.js          # Declarative event system (no addEventListener usage by the user)
 │     └─ index.js           # (Optional aggregator)
@@ -90,14 +90,14 @@ Changing the URL triggers `onChange`, which you use to re-render your app.
 ---
 
 ### 3) State Management
-`createStore(initial)` manages app state immutably, with subscriptions:
+`createState(initial)` manages app state immutably, with subscriptions:
 
 ```js
-const store = createStore({ count: 0 });
-store.subscribe((state) => console.log('state changed', state));
-store.update({ count: store.get().count + 1 });          // shallow merge
-store.set((prev) => ({ ...prev, ready: true }));         // full replace via updater
-const state = store.get();                                // read
+const state = createState({ count: 0 });
+state.subscribe((state) => console.log('state changed', state));
+state.update({ count: state.get().count + 1 });          // shallow merge
+state.set((prev) => ({ ...prev, ready: true }));         // full replace via updater
+const state = state.get();                                // read
 ```
 
 Because state is immutable (deep-frozen), accidental mutations are caught early.
@@ -129,7 +129,7 @@ This is different from `addEventListener` because you declare **what** should ha
 ## How It Works (Why)
 - **Virtual DOM** lets you describe UI as data and apply minimal changes, instead of manually touching DOM nodes.
 - **Router** makes the URL the single source of truth for which view to show; state and URL stay in sync.
-- **Store** centralizes state so any view can read/subscribe/update, solving cross-page sharing.
+- **state** centralizes state so any view can read/subscribe/update, solving cross-page sharing.
 - **Events** are declarative and consistent (one place to wire logic), with a custom API that avoids direct `addEventListener` usage by app code.
 
 ---
@@ -174,7 +174,7 @@ Open `index.html` to see the app. Features:
 - Persistent storage (localStorage)
 - Accessible classes/ids similar to the canonical TodoMVC
 
-Look at `app/todomvc.js` to see how the app composes **router + store + events + vdom**.
+Look at `app/todomvc.js` to see how the app composes **router + state + events + vdom**.
 
 ---
 
@@ -184,25 +184,25 @@ Look at `app/todomvc.js` to see how the app composes **router + store + events +
 <div id="root"></div>
 <script type="module">
   import { h, render, update } from './src/minifw/vdom.js';
-  import { createStore } from './src/minifw/store.js';
+  import { createState } from './src/minifw/state.js';
   import { createRouter } from './src/minifw/router.js';
   import { createEvents } from './src/minifw/events.js';
 
-  const store = createStore({ clicks: 0 });
+  const state = createState({ clicks: 0 });
   const router = createRouter([{ path:'/', view:'home' }]);
   const events = createEvents(document);
 
   function view() {
     return h('div', null,
-      h('h2', null, 'Clicks: ', store.get().clicks),
+      h('h2', null, 'Clicks: ', state.get().clicks),
       h('button', { 'data-action': 'inc()' }, 'Increment')
     );
   }
 
-  events.bindActions((name)=> { if (name==='inc') store.update({ clicks: store.get().clicks + 1 }); });
+  events.bindActions((name)=> { if (name==='inc') state.update({ clicks: state.get().clicks + 1 }); });
   const root = document.querySelector('#root');
   function tick(){ const v = view(); if(!root._vnode) render(v, root); else update(root, v); }
-  router.onChange = tick; store.subscribe(tick); setTimeout(tick, 0);
+  router.onChange = tick; state.subscribe(tick); setTimeout(tick, 0);
 </script>
 ```
 
@@ -215,5 +215,3 @@ Look at `app/todomvc.js` to see how the app composes **router + store + events +
 - Events layer is delegated; for non-bubbling events you may need to attach at a closer root or extend the system.
 
 ---
-
-Happy hacking! 🚀
