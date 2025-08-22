@@ -1,315 +1,280 @@
-import { setRoutes, goTo } from "../framework/router.js";
-import { buildElement, mount, update } from "../framework/dom.js";
-import { useStore } from "../framework/store.js";
+import { useState } from "/framework/state.js";
+import { renderApp } from "/framework/render.js";
 
-// App state
-const [getInput, setInput] = useStore("input", "");
-const [getTodos, setTodos] = useStore("todos", []);
-const [getEditing, setEditing] = useStore("editing", null);
-const [getEditText, setEditText] = useStore("editText", "");
-const [getFilter, setFilter] = useStore("filter", "All");
+// --- States ---
+const [getInput, setInput] = useState("taskInput", "");
+const [getTasks, setTasks] = useState("tasks", []);
+const [getFilter, setFilter] = useState("filter", "all");
+const [getEditing, setEditing] = useState("editing", null); // store index of editing todo
 
-function addTodo(e) {
-  if (e.key === "Enter" && getInput().trim()) {
-    if (getInput().trim().length <= 1) return;
+function App() {
+  const appContainer = document.getElementById("app");
 
-    const todo = {
-      text: getInput().trim(),
-      id: Date.now(),
-      done: false,
-    };
+  const tasks = getTasks();
+  const filter = getFilter();
+  const editing = getEditing();
 
-    
-    setTodos([...getTodos(), todo]);
-
-   
-
-    setInput("");
-  }
-}
-
-function updateInput(e) {
-  setInput(e.target.value);
-}
-
-function toggle(id) {
-  const todos = getTodos().map(todo =>
-    todo.id === id ? { ...todo, done: !todo.done } : todo
-  );
-  setTodos(todos);
-}
-
-function remove(id) {
-  setTodos(getTodos().filter(todo => todo.id !== id));
-}
-
-function clearDone() {
-  setTodos(getTodos().filter(todo => !todo.done));
-  // console.log(getTodos());
-  // TodoApp();
-}
-
-function toggleAll() {
-  const allDone = getTodos().every(todo => todo.done);
-  const todos = getTodos().map(todo => ({
-    ...todo,
-    done: !allDone,
-  }));
-  setTodos(todos);
-}
-
-function startEdit(todo) {
-  setEditing(todo.id);
-  setEditText(todo.text);
-}
-
-function saveEdit(id) {
-  const todos = getTodos().map(todo => {
-    if (todo.id === id) {
-      return {
-        ...todo,
-        text: getEditText().trim() || todo.text,
-      };
-    }
-    return todo;
+  // Filtered tasks
+  const visibleTasks = tasks.filter((t) => {
+    if (filter === "active") return !t.completed;
+    if (filter === "completed") return t.completed;
+    return true;
   });
 
-  setTodos(todos);
-  setEditing(null);
-  setEditText("");
-}
-
-function editKeyDown(e, id) {
-  if (e.key === "Enter") {
-    saveEdit(id);
-  }
-}
-
-function getFiltered(todos, filter) {
-  switch (filter) {
-    case "Active": return todos.filter(todo => !todo.done);
-    case "Completed": return todos.filter(todo => todo.done);
-    default: return todos;
-  }
-}
-
-function TodoApp() {
-  const todos = getTodos();
-  const input = getInput();
-  const filter = getFilter();
-  const filtered = getFiltered(todos, filter);
-  const editing = getEditing();
-  const allDone = todos.length > 0 && todos.every(t => t.done);
+  const remaining = tasks.filter((t) => !t.completed).length;
 
   return {
-    tag: "section",
-    attrs: {
-      class: "todoapp",
-      id: "root"
-    },
+    type: "section",
+    props: { class: "todoapp" },
     children: [
+      // Header + new task input
       {
-        tag: "header",
-        attrs: {
-          class: "header",
-        },
+        type: "header",
+        props: { class: "header" },
         children: [
-          { tag: "h1", children: ["todos"] },
+          { type: "h1", props: {}, children: ["todos"] },
           {
-            tag: "div",
-            attrs: { class: "input-container" },
-            children: [
-              {
-                tag: "input",
-                attrs: {
-                  class: "new-todo",
-                  type: "text",
-                  value: input,
-                  placeholder: "What needs to be done?",
-                  oninput: updateInput,
-                  onkeydown: addTodo,
+            type: "input",
+            props: {
+              class: "new-todo",
+              placeholder: "What needs to be done?",
+              autofocus: true,
+              value: getInput(),
+              oninput: (e) => setInput(e.target.value),
+              onkeydown: (e) => {
+                if (e.key === "Enter" && getInput().trim()) {
+                  setTasks([...tasks, { text: getInput(), completed: false }]);
+                  setInput("");
+                  renderApp(App, appContainer);
                 }
               }
-            ]
+            },
+            children: []
           }
         ]
       },
-      {
-        tag: "section",
-        attrs: { class: "main" },
-        children: [
-          ...(todos.length > 0 ? [{
-            tag: "div",
-            attrs: { class: "toggle-all-container" },
-            children: [
-              {
-                tag: "input",
-                attrs: {
-                  class: "toggle-all",
-                  type: "checkbox",
-                  onclick: toggleAll,
-                  checked: allDone
-                }
-              },
-              {
-                tag: "label",
-                attrs: { class: "toggle-all-label" }
-              }
-            ]
-          }] : []),
-          {
-            tag: "ul",
-            attrs: { class: "todo-list" },
-            children: filtered.map(todo => ({
-              tag: "li",
-              attrs: {
-                class: `${todo.done ? "completed" : ""} ${editing === todo.id ? "editing" : ""}`,
-                key: todo.id
-              },
+
+      // Main section (only if tasks exist)
+      ...(tasks.length > 0
+        ? [
+            {
+              type: "section",
+              props: { class: "main" },
               children: [
-                editing === todo.id ? {
-                  tag: "input",
-                  attrs: {
-                    class: "edit",
-                    type: "text",
-                    value: getEditText(),
-                    oninput: (e) => setEditText(e.target.value),
-                    onkeydown: (e) => editKeyDown(e, todo.id),
-                    onblur: () => saveEdit(todo.id),
-                    autofocus: true
-                  }
-                } : {
-                  tag: "div",
-                  attrs: { class: "view" },
-                  children: [
-                    {
-                      tag: "input",
-                      attrs: {
-                        class: "toggle",
-                        type: "checkbox",
-                        checked: todo.done,
-                        onchange: () => toggle(todo.id)
-                      }
-                    },
-                    {
-                      tag: "label",
-                      attrs: {
-                        ondblclick: () => startEdit(todo)
-                      },
-                      children: [todo.text]
-                    },
-                    {
-                      tag: "button",
-                      attrs: {
-                        class: "destroy",
-                        onclick: () => remove(todo.id)
-                      }
+                {
+                  type: "input",
+                  props: {
+                    id: "toggle-all",
+                    class: "toggle-all",
+                    type: "checkbox",
+                    checked: tasks.every((t) => t.completed),
+                    onchange: () => {
+                      const allDone = tasks.every((t) => t.completed);
+                      setTasks(tasks.map((t) => ({ ...t, completed: !allDone })));
+                      renderApp(App, appContainer);
                     }
-                  ]
+                  },
+                  children: []
+                },
+                {
+                  type: "label",
+                  props: { for: "toggle-all" },
+                  children: ["Mark all as complete"]
+                },
+                {
+                  type: "ul",
+                  props: { class: "todo-list" },
+                  children: visibleTasks.map((task, idx) => {
+                    const realIdx = tasks.indexOf(task); // map visible idx → actual index
+
+                    return {
+                      type: "li",
+                      props: {
+                        class:
+                          (task.completed ? "completed " : "") +
+                          (editing === realIdx ? "editing" : "")
+                      },
+                      children: [
+                        {
+                          type: "div",
+                          props: { class: "view" },
+                          children: [
+                            {
+                              type: "input",
+                              props: {
+                                class: "toggle",
+                                type: "checkbox",
+                                checked: task.completed,
+                                onchange: () => {
+                                  const newTasks = [...tasks];
+                                  newTasks[realIdx].completed =
+                                    !newTasks[realIdx].completed;
+                                  setTasks(newTasks);
+                                  renderApp(App, appContainer);
+                                }
+                              },
+                              children: []
+                            },
+                            {
+                              type: "label",
+                              props: {
+                                ondblclick: () => {
+                                  setEditing(realIdx);
+                                  renderApp(App, appContainer);
+                                }
+                              },
+                              children: [task.text]
+                            },
+                            {
+                              type: "button",
+                              props: {
+                                class: "destroy",
+                                onclick: () => {
+                                  const newTasks = tasks.filter(
+                                    (_, i) => i !== realIdx
+                                  );
+                                  setTasks(newTasks);
+                                  renderApp(App, appContainer);
+                                }
+                              },
+                              children: []
+                            }
+                          ]
+                        },
+                        // If editing → show input
+                        ...(editing === realIdx
+                          ? [
+                              {
+                                type: "input",
+                                props: {
+                                  class: "edit",
+                                  value: task.text,
+                                  autofocus: true,
+                                  onblur: (e) => {
+                                    const newTasks = [...tasks];
+                                    newTasks[realIdx].text = e.target.value.trim() || task.text;
+                                    setTasks(newTasks);
+                                    setEditing(null);
+                                    renderApp(App, appContainer);
+                                  },
+                                  onkeydown: (e) => {
+                                    if (e.key === "Enter") {
+                                      const newTasks = [...tasks];
+                                      newTasks[realIdx].text =
+                                        e.target.value.trim() || task.text;
+                                      setTasks(newTasks);
+                                      setEditing(null);
+                                      renderApp(App, appContainer);
+                                    }
+                                    if (e.key === "Escape") {
+                                      setEditing(null);
+                                      renderApp(App, appContainer);
+                                    }
+                                  }
+                                },
+                                children: []
+                              }
+                            ]
+                          : [])
+                      ]
+                    };
+                  })
                 }
               ]
-            }))
-          }
-        ]
-      },
-      ...(todos.length > 0 ? [{
-        tag: "footer",
-        attrs: { class: "footer" },
-        children: [
-          {
-            tag: "span",
-            attrs: { class: "todo-count" },
-            children: [`${todos.filter(t => !t.done).length} items left!`]
-          },
-          {
-            tag: "ul",
-            attrs: { class: "filters" },
-            children: [
-              {
-                tag: "li",
-                children: [{
-                  tag: "a",
-                  attrs: {
-                    class: filter === "All" ? "selected" : "",
-                    href: "#/",
-                    onclick: (e) => {
-                      e.preventDefault();
-                      goTo("/");
-                    }
-                  },
-                  children: ["All"]
-                }]
-              },
-              {
-                tag: "li",
-                children: [{
-                  tag: "a",
-                  attrs: {
-                    class: filter === "Active" ? "selected" : "",
-                    href: "#/active",
-                    onclick: (e) => {
-                      e.preventDefault();
-                      goTo("/active");
-                    }
-                  },
-                  children: ["Active"]
-                }]
-              },
-              {
-                tag: "li",
-                children: [{
-                  tag: "a",
-                  attrs: {
-                    class: filter === "Completed" ? "selected" : "",
-                    href: "#/completed",
-                    onclick: (e) => {
-                      e.preventDefault();
-                      goTo("/completed");
-                    }
-                  },
-                  children: ["Completed"]
-                }]
-              }
-            ]
-          },
-          {
-            tag: "button",
-            attrs: {
-              class: "clear-completed",
-              
-              onclick: () => {
-                      clearDone();
-                      goTo("/active");
-                      goTo(window.location.hash.slice(1) || "/");
-                    }
             },
-            children: ["Clear completed"]
-          }
-        ]
-      }] : [])
+
+            // Footer
+            {
+              type: "footer",
+              props: { class: "footer" },
+              children: [
+                {
+                  type: "span",
+                  props: { class: "todo-count" },
+                  children: [
+                    { type: "strong", props: {}, children: [remaining] },
+                    ` item${remaining !== 1 ? "s" : ""} left`
+                  ]
+                },
+                {
+                  type: "ul",
+                  props: { class: "filters" },
+                  children: [
+                    {
+                      type: "li",
+                      children: [
+                        {
+                          type: "a",
+                          props: {
+                            class: filter === "all" ? "selected" : "",
+                            href: "#/",
+                            onclick: () => {
+                              setFilter("all");
+                              renderApp(App, appContainer);
+                            }
+                          },
+                          children: ["All"]
+                        }
+                      ]
+                    },
+                    {
+                      type: "li",
+                      children: [
+                        {
+                          type: "a",
+                          props: {
+                            class: filter === "active" ? "selected" : "",
+                            href: "#/active",
+                            onclick: () => {
+                              setFilter("active");
+                              renderApp(App, appContainer);
+                            }
+                          },
+                          children: ["Active"]
+                        }
+                      ]
+                    },
+                    {
+                      type: "li",
+                      children: [
+                        {
+                          type: "a",
+                          props: {
+                            class: filter === "completed" ? "selected" : "",
+                            href: "#/completed",
+                            onclick: () => {
+                              setFilter("completed");
+                              renderApp(App, appContainer);
+                            }
+                          },
+                          children: ["Completed"]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                ...(tasks.some((t) => t.completed)
+                  ? [
+                      {
+                        type: "button",
+                        props: {
+                          class: "clear-completed",
+                          onclick: () => {
+                            setTasks(tasks.filter((t) => !t.completed));
+                            renderApp(App, appContainer);
+                          }
+                        },
+                        children: ["Clear completed"]
+                      }
+                    ]
+                  : [])
+              ]
+            }
+          ]
+        : [])
     ]
   };
 }
 
-const app = document.getElementById("app");
-
-mount(TodoApp, app);
-
-setRoutes({
-  "/": () => {
-    setFilter("All");
-    return TodoApp();
-  },
-  "/active": () => {
-    setFilter("Active");
-    return TodoApp();
-  },
-  "/completed": () => {
-    setFilter("Completed");
-    return TodoApp();
-  },
-});
-
-if (!window.location.hash) {
-  goTo("/");
-}
+const appContainer = document.getElementById("app");
+renderApp(App, appContainer);
