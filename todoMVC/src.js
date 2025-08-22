@@ -1,20 +1,27 @@
 import { useState } from "/framework/state.js";
 import { renderApp } from "/framework/render.js";
+import { useRoute, onRouteChange, navigate, initRouter } from "/framework/router.js";
 
 // --- States ---
 const [getInput, setInput] = useState("taskInput", "");
 const [getTasks, setTasks] = useState("tasks", []);
 const [getFilter, setFilter] = useState("filter", "all");
-const [getEditing, setEditing] = useState("editing", null); // store index of editing todo
+const [getEditing, setEditing] = useState("editing", null); // index of todo being edited
 
 function App() {
-  const appContainer = document.getElementById("app");
+  // Sync filter with route
+  const route = useRoute();
+  let filter = getFilter();
+  if (route === "/" && filter !== "all") setFilter("all");
+  if (route === "/active" && filter !== "active") setFilter("active");
+  if (route === "/completed" && filter !== "completed") setFilter("completed");
+  filter = getFilter();
 
+  const appContainer = document.getElementById("app");
   const tasks = getTasks();
-  const filter = getFilter();
   const editing = getEditing();
 
-  // Filtered tasks
+  // filter tasks
   const visibleTasks = tasks.filter((t) => {
     if (filter === "active") return !t.completed;
     if (filter === "completed") return t.completed;
@@ -23,11 +30,14 @@ function App() {
 
   const remaining = tasks.filter((t) => !t.completed).length;
 
+  // helper to trigger re-render
+  const update = () => renderApp(App, appContainer);
+
   return {
     type: "section",
     props: { class: "todoapp" },
     children: [
-      // Header + new task input
+      // Header
       {
         type: "header",
         props: { class: "header" },
@@ -45,7 +55,7 @@ function App() {
                 if (e.key === "Enter" && getInput().trim()) {
                   setTasks([...tasks, { text: getInput(), completed: false }]);
                   setInput("");
-                  renderApp(App, appContainer);
+                  update();
                 }
               }
             },
@@ -54,7 +64,7 @@ function App() {
         ]
       },
 
-      // Main section (only if tasks exist)
+      // Main section
       ...(tasks.length > 0
         ? [
             {
@@ -71,21 +81,21 @@ function App() {
                     onchange: () => {
                       const allDone = tasks.every((t) => t.completed);
                       setTasks(tasks.map((t) => ({ ...t, completed: !allDone })));
-                      renderApp(App, appContainer);
+                      update();
                     }
                   },
                   children: []
                 },
                 {
                   type: "label",
-                  props: { for: "toggle-all" },
+                  props: { htmlFor: "toggle-all" },
                   children: ["Mark all as complete"]
                 },
                 {
                   type: "ul",
                   props: { class: "todo-list" },
                   children: visibleTasks.map((task, idx) => {
-                    const realIdx = tasks.indexOf(task); // map visible idx → actual index
+                    const realIdx = tasks.indexOf(task); // map visible idx → actual idx
 
                     return {
                       type: "li",
@@ -110,7 +120,7 @@ function App() {
                                   newTasks[realIdx].completed =
                                     !newTasks[realIdx].completed;
                                   setTasks(newTasks);
-                                  renderApp(App, appContainer);
+                                  update();
                                 }
                               },
                               children: []
@@ -120,7 +130,12 @@ function App() {
                               props: {
                                 ondblclick: () => {
                                   setEditing(realIdx);
-                                  renderApp(App, appContainer);
+                                  update();
+                                  requestAnimationFrame(() => {
+                                    const editInput =
+                                      document.querySelector(".edit");
+                                    if (editInput) editInput.focus();
+                                  });
                                 }
                               },
                               children: [task.text]
@@ -134,14 +149,13 @@ function App() {
                                     (_, i) => i !== realIdx
                                   );
                                   setTasks(newTasks);
-                                  renderApp(App, appContainer);
+                                  update();
                                 }
                               },
                               children: []
                             }
                           ]
                         },
-                        // If editing → show input
                         ...(editing === realIdx
                           ? [
                               {
@@ -149,13 +163,13 @@ function App() {
                                 props: {
                                   class: "edit",
                                   value: task.text,
-                                  autofocus: true,
                                   onblur: (e) => {
                                     const newTasks = [...tasks];
-                                    newTasks[realIdx].text = e.target.value.trim() || task.text;
+                                    newTasks[realIdx].text =
+                                      e.target.value.trim() || task.text;
                                     setTasks(newTasks);
                                     setEditing(null);
-                                    renderApp(App, appContainer);
+                                    update();
                                   },
                                   onkeydown: (e) => {
                                     if (e.key === "Enter") {
@@ -164,11 +178,11 @@ function App() {
                                         e.target.value.trim() || task.text;
                                       setTasks(newTasks);
                                       setEditing(null);
-                                      renderApp(App, appContainer);
+                                      update();
                                     }
                                     if (e.key === "Escape") {
                                       setEditing(null);
-                                      renderApp(App, appContainer);
+                                      update();
                                     }
                                   }
                                 },
@@ -192,8 +206,7 @@ function App() {
                   type: "span",
                   props: { class: "todo-count" },
                   children: [
-                    { type: "strong", props: {}, children: [remaining] },
-                    ` item${remaining !== 1 ? "s" : ""} left`
+                    `${remaining} item${remaining !== 1 ? "s" : ""} left`
                   ]
                 },
                 {
@@ -208,9 +221,9 @@ function App() {
                           props: {
                             class: filter === "all" ? "selected" : "",
                             href: "#/",
-                            onclick: () => {
-                              setFilter("all");
-                              renderApp(App, appContainer);
+                            onclick: (e) => {
+                              e.preventDefault();
+                              navigate("/");
                             }
                           },
                           children: ["All"]
@@ -225,9 +238,9 @@ function App() {
                           props: {
                             class: filter === "active" ? "selected" : "",
                             href: "#/active",
-                            onclick: () => {
-                              setFilter("active");
-                              renderApp(App, appContainer);
+                            onclick: (e) => {
+                              e.preventDefault();
+                              navigate("/active");
                             }
                           },
                           children: ["Active"]
@@ -242,9 +255,9 @@ function App() {
                           props: {
                             class: filter === "completed" ? "selected" : "",
                             href: "#/completed",
-                            onclick: () => {
-                              setFilter("completed");
-                              renderApp(App, appContainer);
+                            onclick: (e) => {
+                              e.preventDefault();
+                              navigate("/completed");
                             }
                           },
                           children: ["Completed"]
@@ -261,7 +274,7 @@ function App() {
                           class: "clear-completed",
                           onclick: () => {
                             setTasks(tasks.filter((t) => !t.completed));
-                            renderApp(App, appContainer);
+                            update();
                           }
                         },
                         children: ["Clear completed"]
@@ -277,4 +290,6 @@ function App() {
 }
 
 const appContainer = document.getElementById("app");
+initRouter();
+onRouteChange(() => renderApp(App, appContainer));
 renderApp(App, appContainer);
