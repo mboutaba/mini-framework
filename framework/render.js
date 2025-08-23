@@ -1,4 +1,6 @@
-let oldVDOM = null;
+// Simple and reliable renderer with diff system
+let currentVDOM = null;
+let rootElement = null;
 
 function createElement(vnode) {
   if (typeof vnode === "string") {
@@ -7,102 +9,197 @@ function createElement(vnode) {
 
   const el = document.createElement(vnode.type);
 
-  // apply props (attributes + events)
+  // Apply props
   for (const [key, value] of Object.entries(vnode.props || {})) {
+    if (key === "key") continue;
+    
     if (key.startsWith("on")) {
-      el[key.toLowerCase()] = value; // e.g. onclick, oninput
+      const event = key.slice(2).toLowerCase();
+      el.addEventListener(event, value);
+    } else if (key === "class") {
+      el.className = value || "";
+    } else if (key in el) {
+      el[key] = value;
     } else {
-      el.setAttribute(key, value);
+      if (value != null && value !== false) {
+        el.setAttribute(key, value === true ? "" : value);
+      }
     }
   }
 
-  // render children
-  if (vnode.children) {
-    vnode.children.forEach((child) => {
-      el.appendChild(createElement(child));
-    });
-  }
+  // Children
+  (vnode.children || []).forEach((child) => {
+    el.appendChild(createElement(child));
+  });
 
   return el;
 }
 
-// Helper: compare props
-function updateProps(dom, oldProps = {}, newProps = {}) {
-  // Remove old props
-  for (const key in oldProps) {
-    if (!(key in newProps)) {
-      if (key.startsWith("on")) {
-        dom[key.toLowerCase()] = null;
-      } else {
-        dom.removeAttribute(key);
+function isSameType(oldNode, newNode) {
+  if (typeof oldNode !== typeof newNode) return false;
+  if (typeof oldNode === "string") return true;
+  return oldNode.type === newNode.type;
+}
+
+function getKey(node) {
+  return typeof node === "string" ? null : node.props?.key;
+}
+
+function updateProps(element, newProps, oldProps) {
+  const allProps = { ...oldProps, ...newProps };
+  
+  for (const key in allProps) {
+    const newValue = newProps[key];
+    const oldValue = oldProps[key];
+    
+    if (newValue === oldValue) continue;
+    if (key === "key") continue;
+    
+    if (key.startsWith("on")) {
+      const event = key.slice(2).toLowerCase();
+      if (oldValue) element.removeEventListener(event, oldValue);
+      if (newValue) element.addEventListener(event, newValue);
+    } else if (key === "class") {
+      element.className = newValue || "";
+    } else if (key === "value") {
+      // Preserve cursor position for focused inputs
+      if (element === document.activeElement && element.value !== newValue) {
+        const start = element.selectionStart;
+        const end = element.selectionEnd;
+        element.value = newValue;
+        element.setSelectionRange(start, end);
+      } else if (element !== document.activeElement) {
+        element.value = newValue;
       }
-    }
-  }
-  // Set new props
-  for (const key in newProps) {
-    if (oldProps[key] !== newProps[key]) {
-      if (key.startsWith("on")) {
-        dom[key.toLowerCase()] = newProps[key];
-      } else {
-        dom.setAttribute(key, newProps[key]);
+    } else if (key in element) {
+      element[key] = newValue;
+    } else {
+      if (newValue != null && newValue !== false) {
+        element.setAttribute(key, newValue === true ? "" : newValue);
+      } else if (oldValue != null) {
+        element.removeAttribute(key);
       }
     }
   }
 }
 
-// Diff function
-function diff(parent, newVNode, oldVNode, index = 0) {
-  const existingDom = parent.childNodes[index];
-
-  // Case 1: old node doesn't exist
-  if (!oldVNode) {
-    parent.appendChild(createElement(newVNode));
-    return;
-  }
-
-  // Case 2: new node doesn't exist
-  if (!newVNode) {
-    parent.removeChild(existingDom);
-    return;
-  }
-
-  // Case 3: both are strings (text nodes)
-  if (typeof newVNode === "string" && typeof oldVNode === "string") {
-    if (newVNode !== oldVNode) {
-      const newDom = document.createTextNode(newVNode);
-      parent.replaceChild(newDom, existingDom);
-    }
-    return;
-  }
-
-  // Case 4: node type changed
-  if (newVNode.type !== oldVNode.type) {
-    parent.replaceChild(createElement(newVNode), existingDom);
-    return;
-  }
-
-  // Case 5: update props
-  updateProps(existingDom, oldVNode.props, newVNode.props);
-
-  // Case 6: diff children
-  const newChildren = newVNode.children || [];
-  const oldChildren = oldVNode.children || [];
-  const max = Math.max(newChildren.length, oldChildren.length);
-  for (let i = 0; i < max; i++) {
-    diff(existingDom, newChildren[i], oldChildren[i], i);
+function diffChildren(parentElement, newChildren, oldChildren) {
+  // For better list diffing, check if we're dealing with keyed children
+  const hasKeys = newChildren.some(child => getKey(child) != null) || 
+                  oldChildren.some(child => getKey(child) != null);
+  
+  if (hasKeys) {
+    // Use keyed diffing for lists
+    diffKeyedChildren(parentElement, newChildren, oldChildren);
+  } else {
+    // Use simple position-based diffing
+    diffSimpleChildren(parentElement, newChildren, oldChildren);
   }
 }
 
-// Render function with diffing
+function diffKeyedChildren(parentElement, newChildren, oldChildren) {
+  const oldKeyToIndex = {};
+  const oldElements = Array.from(parentElement.childNodes);
+  
+  // Build old key map
+  oldChildren.forEach((child, index) => {
+    const key = getKey(child);
+    if (key != null) {
+      oldKeyToIndex[key] = index;
+    }
+  });
+  
+  // Process new children
+  let oldIndex = 0;
+  for (let newIndex = 0; newIndex < newChildren.length; newIndex++) {
+    const newChild = newChildren[newIndex];
+    const newKey = getKey(newChild);
+    
+    if (newKey != null && oldKeyToIndex.hasOwnProperty(newKey)) {
+      // Found matching key - reuse existing element
+      const oldElementIndex = oldKeyToIndex[newKey];
+      const oldElement = oldElements[oldElementIndex];
+      const oldChild = oldChildren[oldElementIndex];
+      
+      // Move element to correct position if needed
+      if (parentElement.childNodes[newIndex] !== oldElement) {
+        parentElement.insertBefore(oldElement, parentElement.childNodes[newIndex] || null);
+      }
+      
+      // Update the element
+      if (typeof newChild !== "string") {
+        updateProps(oldElement, newChild.props || {}, oldChild.props || {});
+        diffChildren(oldElement, newChild.children || [], oldChild.children || []);
+      }
+    } else {
+      // New element - create and insert
+      const newElement = createElement(newChild);
+      parentElement.insertBefore(newElement, parentElement.childNodes[newIndex] || null);
+    }
+  }
+  
+  // Remove any remaining old elements
+  while (parentElement.childNodes.length > newChildren.length) {
+    parentElement.removeChild(parentElement.lastChild);
+  }
+}
+
+function diffSimpleChildren(parentElement, newChildren, oldChildren) {
+  // Handle removals first (from end to start to avoid index issues)
+  for (let i = oldChildren.length - 1; i >= newChildren.length; i--) {
+    if (parentElement.childNodes[i]) {
+      parentElement.removeChild(parentElement.childNodes[i]);
+    }
+  }
+  
+  // Handle updates and additions
+  for (let i = 0; i < newChildren.length; i++) {
+    const newChild = newChildren[i];
+    const oldChild = oldChildren[i];
+    const childElement = parentElement.childNodes[i];
+    
+    if (!oldChild) {
+      // Add new child
+      parentElement.appendChild(createElement(newChild));
+    } else if (childElement) {
+      if (isSameType(oldChild, newChild)) {
+        // Update existing child
+        if (typeof newChild === "string") {
+          if (newChild !== oldChild) {
+            childElement.textContent = newChild;
+          }
+        } else {
+          updateProps(childElement, newChild.props || {}, oldChild.props || {});
+          diffChildren(childElement, newChild.children || [], oldChild.children || []);
+        }
+      } else {
+        // Replace child
+        parentElement.replaceChild(createElement(newChild), childElement);
+      }
+    }
+  }
+}
+
 export function renderApp(component, appContainer) {
   const newVDOM = component();
-
-  if (oldVDOM === null) {
+  
+  if (!currentVDOM || !rootElement) {
+    // First render
     appContainer.innerHTML = "";
-    appContainer.appendChild(createElement(newVDOM));
+    rootElement = createElement(newVDOM);
+    appContainer.appendChild(rootElement);
   } else {
-    diff(appContainer, newVDOM, oldVDOM);
+    // Diff and update
+    if (isSameType(currentVDOM, newVDOM)) {
+      updateProps(rootElement, newVDOM.props || {}, currentVDOM.props || {});
+      diffChildren(rootElement, newVDOM.children || [], currentVDOM.children || []);
+    } else {
+      // Replace entire root
+      const newRoot = createElement(newVDOM);
+      appContainer.replaceChild(newRoot, rootElement);
+      rootElement = newRoot;
+    }
   }
-
-  oldVDOM = newVDOM;
+  
+  currentVDOM = newVDOM;
 }

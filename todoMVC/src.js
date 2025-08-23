@@ -1,23 +1,34 @@
-import { useState } from "/framework/state.js";
-import { renderApp } from "/framework/render.js";
-import { useRoute, onRouteChange, navigate, initRouter } from "/framework/router.js";
+import { useState } from "../framework/state.js";
+import { renderApp } from "../framework/render.js";
+import { useRoute, onRouteChange, navigate, initRouter } from "../framework/router.js";
 
 // --- States ---
 const [getInput, setInput] = useState("taskInput", "");
 const [getTasks, setTasks] = useState("tasks", []);
 const [getFilter, setFilter] = useState("filter", "all");
-const [getEditing, setEditing] = useState("editing", null); // index of todo being edited
+const [getEditing, setEditing] = useState("editing", null);
+
+// Helper function to re-render
+function update() {
+  const appContainer = document.getElementById("app");
+  renderApp(App, appContainer);
+}
 
 function App() {
-  // Sync filter with route
+  // --- Sync filter with route ---
   const route = useRoute();
   let filter = getFilter();
-  if (route === "/" && filter !== "all") setFilter("all");
-  if (route === "/active" && filter !== "active") setFilter("active");
-  if (route === "/completed" && filter !== "completed") setFilter("completed");
-  filter = getFilter();
+  
+  // Update filter based on route
+  let newFilter = "all";
+  if (route === "/active") newFilter = "active";
+  if (route === "/completed") newFilter = "completed";
+  
+  if (filter !== newFilter) {
+    setFilter(newFilter);
+    filter = newFilter;
+  }
 
-  const appContainer = document.getElementById("app");
   const tasks = getTasks();
   const editing = getEditing();
 
@@ -30,14 +41,11 @@ function App() {
 
   const remaining = tasks.filter((t) => !t.completed).length;
 
-  // helper to trigger re-render
-  const update = () => renderApp(App, appContainer);
-
   return {
     type: "section",
     props: { class: "todoapp" },
     children: [
-      // Header
+      // --- Header ---
       {
         type: "header",
         props: { class: "header" },
@@ -53,8 +61,16 @@ function App() {
               oninput: (e) => setInput(e.target.value),
               onkeydown: (e) => {
                 if (e.key === "Enter" && getInput().trim()) {
-                  setTasks([...tasks, { text: getInput(), completed: false }]);
+                  setTasks([
+                    ...getTasks(),
+                    { id: Date.now(), text: getInput().trim(), completed: false }
+                  ]);
                   setInput("");
+                  // Force focus back to input after render
+                  setTimeout(() => {
+                    const input = document.querySelector('.new-todo');
+                    if (input) input.focus();
+                  }, 0);
                   update();
                 }
               }
@@ -64,7 +80,7 @@ function App() {
         ]
       },
 
-      // Main section
+      // --- Main section ---
       ...(tasks.length > 0
         ? [
             {
@@ -88,21 +104,23 @@ function App() {
                 },
                 {
                   type: "label",
-                  props: { htmlFor: "toggle-all" },
+                  props: { for: "toggle-all" },
                   children: ["Mark all as complete"]
                 },
                 {
                   type: "ul",
                   props: { class: "todo-list" },
                   children: visibleTasks.map((task, idx) => {
-                    const realIdx = tasks.indexOf(task); // map visible idx → actual idx
+                    const realIdx = tasks.indexOf(task);
 
                     return {
                       type: "li",
                       props: {
-                        class:
-                          (task.completed ? "completed " : "") +
-                          (editing === realIdx ? "editing" : "")
+                        key: task.id,
+                        class: [
+                          task.completed ? "completed" : "",
+                          editing === realIdx ? "editing" : ""
+                        ].filter(Boolean).join(" ")
                       },
                       children: [
                         {
@@ -117,8 +135,7 @@ function App() {
                                 checked: task.completed,
                                 onchange: () => {
                                   const newTasks = [...tasks];
-                                  newTasks[realIdx].completed =
-                                    !newTasks[realIdx].completed;
+                                  newTasks[realIdx].completed = !newTasks[realIdx].completed;
                                   setTasks(newTasks);
                                   update();
                                 }
@@ -131,11 +148,13 @@ function App() {
                                 ondblclick: () => {
                                   setEditing(realIdx);
                                   update();
-                                  requestAnimationFrame(() => {
-                                    const editInput =
-                                      document.querySelector(".edit");
-                                    if (editInput) editInput.focus();
-                                  });
+                                  setTimeout(() => {
+                                    const editInput = document.querySelector(".edit");
+                                    if (editInput) {
+                                      editInput.focus();
+                                      editInput.select();
+                                    }
+                                  }, 0);
                                 }
                               },
                               children: [task.text]
@@ -145,9 +164,7 @@ function App() {
                               props: {
                                 class: "destroy",
                                 onclick: () => {
-                                  const newTasks = tasks.filter(
-                                    (_, i) => i !== realIdx
-                                  );
+                                  const newTasks = tasks.filter((_, i) => i !== realIdx);
                                   setTasks(newTasks);
                                   update();
                                 }
@@ -164,21 +181,22 @@ function App() {
                                   class: "edit",
                                   value: task.text,
                                   onblur: (e) => {
-                                    const newTasks = [...tasks];
-                                    newTasks[realIdx].text =
-                                      e.target.value.trim() || task.text;
-                                    setTasks(newTasks);
+                                    const newText = e.target.value.trim();
+                                    if (newText) {
+                                      const newTasks = [...tasks];
+                                      newTasks[realIdx].text = newText;
+                                      setTasks(newTasks);
+                                    } else {
+                                      // Delete if empty
+                                      const newTasks = tasks.filter((_, i) => i !== realIdx);
+                                      setTasks(newTasks);
+                                    }
                                     setEditing(null);
                                     update();
                                   },
                                   onkeydown: (e) => {
                                     if (e.key === "Enter") {
-                                      const newTasks = [...tasks];
-                                      newTasks[realIdx].text =
-                                        e.target.value.trim() || task.text;
-                                      setTasks(newTasks);
-                                      setEditing(null);
-                                      update();
+                                      e.target.blur();
                                     }
                                     if (e.key === "Escape") {
                                       setEditing(null);
@@ -197,7 +215,7 @@ function App() {
               ]
             },
 
-            // Footer
+            // --- Footer ---
             {
               type: "footer",
               props: { class: "footer" },
@@ -289,6 +307,7 @@ function App() {
   };
 }
 
+// Initialize app
 const appContainer = document.getElementById("app");
 initRouter();
 onRouteChange(() => renderApp(App, appContainer));

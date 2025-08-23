@@ -1,7 +1,5 @@
-// Simple hash-based router for the mini-framework
-// Usage: import { useRoute, initRouter } from './router.js'
-
-let currentRoute = window.location.hash.slice(1) || '/';
+// Simple hash-based router
+let currentRoute = window.location.hash.slice(1) || "/";
 let listeners = [];
 
 export function useRoute() {
@@ -15,12 +13,14 @@ export function onRouteChange(listener) {
 export function navigate(path) {
   if (path !== currentRoute) {
     window.location.hash = path;
+    currentRoute = path;
+    listeners.forEach((fn) => fn(currentRoute));
   }
 }
 
 export function initRouter() {
-  window.addEventListener('hashchange', () => {
-    currentRoute = window.location.hash.slice(1) || '/';
-    listeners.forEach(fn => fn(currentRoute));
+  window.addEventListener("hashchange", () => {
+    currentRoute = window.location.hash.slice(1) || "/";
+    listeners.forEach((fn) => fn(currentRoute));
   });
 }
