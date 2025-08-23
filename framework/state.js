@@ -1,10 +1,15 @@
-import { update } from "./dom.js";
-export let state = {};
-let ready = false;
-export function useState(key, initial) {
-  if (!(key in state)) state[key] = initial;
-  function get(){ return state[key]; }
-  function set(v){ state[key] = v; if (ready) update(); }
-  return [get, set];
+// Simple state storage
+const stateStore = {};
+
+export function useState(key, initialValue) {
+  if (!(key in stateStore)) {
+    stateStore[key] = initialValue;
+  }
+
+  const getter = () => stateStore[key];
+  const setter = (newValue) => {
+    stateStore[key] = newValue;
+  };
+
+  return [getter, setter];
 }
-export function setReady(){ ready = true; }

@@ -1,22 +1,26 @@
-import { patchElement, container, getVDOM, setVDOM } from "./dom.js";
-let routes = {};
-export function setRoutes(map) {
-  routes = map;
-  handleRoute();
+// Simple hash-based router
+let currentRoute = window.location.hash.slice(1) || "/";
+let listeners = [];
+
+export function useRoute() {
+  return currentRoute;
 }
-export function handleRoute() {
-  const path = window.location.hash.replace('#','') || '/';
-  const component = routes[path];
-  if (component) {
-    const newVDOM = component();
-    setVDOM(null);
-    patchElement(container, newVDOM, null, 0);
-    setVDOM(newVDOM);
-  } else if (routes['/']) {
-    const newVDOM = routes['/']();
-    setVDOM(null);
-    patchElement(container, newVDOM, null, 0);
-    setVDOM(newVDOM);
+
+export function onRouteChange(listener) {
+  listeners.push(listener);
+}
+
+export function navigate(path) {
+  if (path !== currentRoute) {
+    window.location.hash = path;
+    currentRoute = path;
+    listeners.forEach((fn) => fn(currentRoute));
   }
 }
-export function goTo(path){ window.location.hash = path; }
+
+export function initRouter() {
+  window.addEventListener("hashchange", () => {
+    currentRoute = window.location.hash.slice(1) || "/";
+    listeners.forEach((fn) => fn(currentRoute));
+  });
+}
