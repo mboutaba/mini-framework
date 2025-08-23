@@ -14,10 +14,6 @@ function update() {
   renderApp(App, appContainer);
 }
 
-
-
-
-
 function App() {
   // --- Sync filter with route ---
   const route = useRoute();
@@ -131,6 +127,7 @@ function App() {
                             {
                               type: "input",
                               props: {
+                                id: realIdx,
                                 class: "toggle",
                                 type: "checkbox",
                                 checked: task.completed,

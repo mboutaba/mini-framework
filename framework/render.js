@@ -16,8 +16,11 @@ function createElement(vnode) {
     if (key.startsWith("on")) {
       const event = key.slice(2).toLowerCase();
       el.addEventListener(event, value);
+
     } else if (key === "class") {
       el.className = value || "";
+    } else if (key === "id") {
+      el.id = value || "";
     } else if (key in el) {
       el[key] = value;
     } else {
@@ -53,19 +56,18 @@ function updateProps(element, newProps, oldProps) {
     const oldValue = oldProps[key];
     
     if (key === "key") continue;
-    
     if (key.startsWith("on")) {
       const event = key.slice(2).toLowerCase();
       if (oldValue) element.removeEventListener(event, oldValue);
       if (newValue) element.addEventListener(event, newValue);
-    
-    } else if (key === "class") {
-      
+    }
+    if (key === "class") {
       element.className = newValue || "";
-   
-    } else if (key === "value") {
-      
-      
+    }
+    if (key === "id") {
+      element.id = newValue || "";
+    }
+    if (key === "value") {
       // Preserve cursor position for focused inputs
       if (element === document.activeElement && element.value !== newValue) {
          
