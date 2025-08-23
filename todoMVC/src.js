@@ -14,6 +14,10 @@ function update() {
   renderApp(App, appContainer);
 }
 
+
+
+
+
 function App() {
   // --- Sync filter with route ---
   const route = useRoute();
@@ -32,6 +36,7 @@ function App() {
   const tasks = getTasks();
   const editing = getEditing();
 
+  setInput(getInput());
   // filter tasks
   const visibleTasks = tasks.filter((t) => {
     if (filter === "active") return !t.completed;
@@ -60,17 +65,13 @@ function App() {
               value: getInput(),
               oninput: (e) => setInput(e.target.value),
               onkeydown: (e) => {
-                if (e.key === "Enter" && getInput().trim()) {
+                if (e.key === "Enter" && getInput().trim().length >= 2) {
                   setTasks([
                     ...getTasks(),
                     { id: Date.now(), text: getInput().trim(), completed: false }
                   ]);
                   setInput("");
-                  // Force focus back to input after render
-                  setTimeout(() => {
-                    const input = document.querySelector('.new-todo');
-                    if (input) input.focus();
-                  }, 0);
+                
                   update();
                 }
               }
@@ -284,8 +285,8 @@ function App() {
                     }
                   ]
                 },
-                ...(tasks.some((t) => t.completed)
-                  ? [
+                
+                   
                       {
                         type: "button",
                         props: {
@@ -297,8 +298,8 @@ function App() {
                         },
                         children: ["Clear completed"]
                       }
-                    ]
-                  : [])
+                    
+                  
               ]
             }
           ]

@@ -52,25 +52,33 @@ function updateProps(element, newProps, oldProps) {
     const newValue = newProps[key];
     const oldValue = oldProps[key];
     
-    if (newValue === oldValue) continue;
     if (key === "key") continue;
     
     if (key.startsWith("on")) {
       const event = key.slice(2).toLowerCase();
       if (oldValue) element.removeEventListener(event, oldValue);
       if (newValue) element.addEventListener(event, newValue);
+    
     } else if (key === "class") {
+      
       element.className = newValue || "";
+   
     } else if (key === "value") {
+      
+      console.log("value updated 0000")
       // Preserve cursor position for focused inputs
       if (element === document.activeElement && element.value !== newValue) {
+         console.log("value updated 1111")
         const start = element.selectionStart;
         const end = element.selectionEnd;
-        element.value = newValue;
+        element.value = "";
         element.setSelectionRange(start, end);
       } else if (element !== document.activeElement) {
-        element.value = newValue;
+         console.log("value updated 2222")
+        element.value = "";
       }
+
+
     } else if (key in element) {
       element[key] = newValue;
     } else {
@@ -97,6 +105,11 @@ function diffChildren(parentElement, newChildren, oldChildren) {
   }
 }
 
+
+
+
+
+
 function diffKeyedChildren(parentElement, newChildren, oldChildren) {
   const oldKeyToIndex = {};
   const oldElements = Array.from(parentElement.childNodes);
@@ -110,7 +123,7 @@ function diffKeyedChildren(parentElement, newChildren, oldChildren) {
   });
   
   // Process new children
-  let oldIndex = 0;
+
   for (let newIndex = 0; newIndex < newChildren.length; newIndex++) {
     const newChild = newChildren[newIndex];
     const newKey = getKey(newChild);
@@ -183,6 +196,8 @@ function diffSimpleChildren(parentElement, newChildren, oldChildren) {
 export function renderApp(component, appContainer) {
   const newVDOM = component();
   
+ 
+
   if (!currentVDOM || !rootElement) {
     // First render
     appContainer.innerHTML = "";
