@@ -199,10 +199,6 @@ function App() {
                                     if (e.key === "Enter") {
                                       e.target.blur();
                                     }
-                                    if (e.key === "Escape") {
-                                      setEditing(null);
-                                      update();
-                                    }
                                   }
                                 },
                                 children: []

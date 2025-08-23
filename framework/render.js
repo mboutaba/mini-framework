@@ -65,16 +65,16 @@ function updateProps(element, newProps, oldProps) {
    
     } else if (key === "value") {
       
-      console.log("value updated 0000")
+      
       // Preserve cursor position for focused inputs
       if (element === document.activeElement && element.value !== newValue) {
-         console.log("value updated 1111")
+         
         const start = element.selectionStart;
         const end = element.selectionEnd;
         element.value = "";
         element.setSelectionRange(start, end);
       } else if (element !== document.activeElement) {
-         console.log("value updated 2222")
+        
         element.value = "";
       }
 
@@ -104,11 +104,6 @@ function diffChildren(parentElement, newChildren, oldChildren) {
     diffSimpleChildren(parentElement, newChildren, oldChildren);
   }
 }
-
-
-
-
-
 
 function diffKeyedChildren(parentElement, newChildren, oldChildren) {
   const oldKeyToIndex = {};
@@ -195,8 +190,6 @@ function diffSimpleChildren(parentElement, newChildren, oldChildren) {
 
 export function renderApp(component, appContainer) {
   const newVDOM = component();
-  
- 
 
   if (!currentVDOM || !rootElement) {
     // First render
