@@ -14,9 +14,9 @@ function createElement(vnode) {
     if (key === "key") continue;
     
     if (key.startsWith("on")) {
-      const event = key.slice(2).toLowerCase();
-      el.addEventListener(event, value);
-
+     
+     
+     el[key.toLowerCase()] = value;
     } else if (key === "class") {
       el.className = value || "";
     } else if (key === "id") {
@@ -57,23 +57,17 @@ function updateProps(element, newProps, oldProps) {
     
     if (key === "key") continue;
     if (key.startsWith("on")) {
-      const event = key.slice(2).toLowerCase();
-      if (oldValue) element.removeEventListener(event, oldValue);
-      if (newValue) element.addEventListener(event, newValue);
-    }
-    if (key === "class") {
+     
+      element[key.toLowerCase()] = newValue || null;
+    } else if (key === "class") {
       element.className = newValue || "";
-    }
-    if (key === "id") {
+    } else if (key === "id") {
       element.id = newValue || "";
-    }
-    if (key === "value") {
-      // Preserve cursor position for focused inputs
+    } else if (key === "value") {
       if (element === document.activeElement && element.value !== newValue) {
-         
         const start = element.selectionStart;
         const end = element.selectionEnd;
-        element.value = "";
+        element.value = newValue || "";
         element.setSelectionRange(start, end);
       } else if (element !== document.activeElement) {
         
